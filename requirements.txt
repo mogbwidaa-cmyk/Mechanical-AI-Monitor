@@ -1,0 +1,6 @@
+streamlit
+plotly
+opencv-python-headless
+numpy
+Pillow
+scikit-learn
