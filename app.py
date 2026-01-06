@@ -9,7 +9,7 @@ import os
 # --- 1. إعدادات الصفحة ---
 st.set_page_config(page_title="منصة م. مجاهد لمراقبة المعدات", page_icon="⚙️", layout="wide")
 
-# --- 2. إدارة السجل وتتبع الزوار (Session State) ---
+# --- 2. إدارة السجل وتتبع الزوار ---
 if 'event_log' not in st.session_state:
     st.session_state.event_log = []
 
@@ -18,7 +18,7 @@ TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
 def notify_visitor_with_location():
-    """دالة تتبع موقع الزائر وإرسال تنبيه للجوال"""
+    """تتبع موقع الزائر وإرسال تنبيه للجوال"""
     if 'notified' not in st.session_state:
         try:
             # جلب بيانات الموقع عبر الـ IP
@@ -34,8 +34,10 @@ def notify_visitor_with_location():
                 f"⏰ الوقت: {now}\n"
                 f"📱 ملاحظة: يتم التصفح الآن."
             )
-            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
-            requests.get(url)
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
+            # تصحيح بسيط لمتغير الرسالة هنا
+            url_fix = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
+            requests.get(url_fix)
             st.session_state.notified = True
         except:
             pass
@@ -102,7 +104,7 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# معالجة البيانات
+# معالجة البيانات والتحليل
 if vibration_val <= 2.8: status, color = "Good", "green"
 elif vibration_val <= 7.1: status, color = "Warning", "orange"
 else: status, color = "Critical", "red"
@@ -110,4 +112,5 @@ else: status, color = "Critical", "red"
 days_left = max(1, int(150 / (vibration_val + 0.1)))
 fail_date = datetime.date.today() + datetime.timedelta(days=days_left)
 
-st.header(f"📊 حالة التشغيل: {
+# --- تصحيح السطر الذي حدث فيه الخطأ ---
+st.header(f"📊 حالة التشغيل: {selected_factory
