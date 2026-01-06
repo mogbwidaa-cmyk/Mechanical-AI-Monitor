@@ -6,25 +6,26 @@ import datetime
 import requests
 import os
 
-# --- 1. إعدادات الصفحة ---
-st.set_page_config(page_title="منصة م. مجاهد - تحليل FFT المتقدم", page_icon="⚙️", layout="wide")
+# --- 1. إعدادات الصفحة الفنية ---
+st.set_page_config(page_title="منصة مراقبة المصانع والمعدات الميكانيكية", page_icon="⚙️", layout="wide")
 
-# --- 2. إدارة السجل وتتبع الزوار ---
+# --- 2. إدارة الجلسة والتتبع ---
 if 'event_log' not in st.session_state:
     st.session_state.event_log = []
 
-# --- 3. إعدادات التنبيهات ---
+# --- 3. إعدادات التنبيهات (تليجرام) ---
 TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
 def notify_visitor_with_location():
+    """تتبع موقع الزائر وإرسال تنبيه فوري للهاتف"""
     if 'notified' not in st.session_state:
         try:
             response = requests.get('http://ip-api.com/json/', timeout=5).json()
             city = response.get('city', 'غير معروف')
             region = response.get('regionName', 'غير معروف')
             now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}"
+            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}\n📱 الحالة: تصفح نشط"
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
             requests.get(url)
             st.session_state.notified = True
@@ -32,76 +33,92 @@ def notify_visitor_with_location():
 
 notify_visitor_with_location()
 
-def send_intelligent_alert(source, asset, value, status, diagnostic):
+def send_technical_alert(source, asset, value, status, diagnostic):
+    """إرسال تقارير الحالة الفنية"""
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-    message = f"🚨 **تنبيه فني**\n📍 المصدر: {source}\n⚙️ المعدة: {asset}\n📊 القيمة: {value}\n⚠️ الحالة: {status}\n🔍 التشخيص: {diagnostic}"
+    message = (
+        f"🚨 **تقرير حالة فنية - منصة م. مجاهد**\n\n"
+        f"📍 المنشأة: {source}\n"
+        f"⚙️ المعدة: {asset}\n"
+        f"📊 الاهتزاز: {value}\n"
+        f"⚠️ التقييم: {status}\n"
+        f"🔍 التشخيص: {diagnostic}"
+    )
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
     try: 
         requests.get(url)
-        st.session_state.event_log.insert(0, {"الوقت": now, "المصدر": source, "المعدة": asset, "الحالة": status, "التشخيص": diagnostic})
+        st.session_state.event_log.insert(0, {"الوقت": now, "المنشأة": source, "المعدة": asset, "التقييم": status, "التشخيص": diagnostic})
     except: pass
 
-# --- 4. القائمة الجانبية ---
+# --- 4. القائمة الجانبية (لوحة التحكم) ---
 with st.sidebar:
-    st.title("👤 المهندس مجاهد بشير")
-    st.success("✅ متاح للتوظيف فوراً")
-    # التأكد من وجود ملف CV
+    st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
+    st.title("المهندس مجاهد بشير")
+    st.info("خبير صيانة ميكانيكية وأتمتة صناعية")
+    
+    # التحقق من السيرة الذاتية
     if os.path.exists("cv.pdf"):
         with open("cv.pdf", "rb") as f:
             st.download_button("📄 تحميل السيرة الذاتية (CV)", f, "cv.pdf", mime="application/pdf", use_container_width=True)
     
     st.divider()
-    st.header("🏢 تحكم المنشأة")
-    selected_factory = st.selectbox("المصنع:", ["Madinah Plant", "Jeddah Industrial"])
-    machine_selected = st.selectbox("المعدة:", ["Pump P-01", "Motor M-02", "Compressor C-10"])
-    vibration_val = st.slider("مستوى الاهتزاز (mm/s)", 0.0, 15.0, 3.2)
-    rpm_val = st.number_input("سرعة الدوران (RPM)", value=1450)
+    st.header("⚙️ مدخلات النظام الفنية")
+    factory = st.selectbox("الوحدة الصناعية:", ["مجمع الصناعات بجدة", "مصفاة ينبع", "مدينة نيوم الصناعية"])
+    machine = st.selectbox("المعدة تحت الفحص:", ["مضخة طرد مركزي P-101", "ضاغط هواء C-202", "محرك مروحة تبريد F-305"])
+    vib_input = st.slider("قراءة الاهتزاز الكلي (RMS mm/s):", 0.0, 15.0, 3.2)
+    rpm_input = st.number_input("سرعة الدوران التشغيلية (RPM):", value=1450)
 
-# --- 5. الواجهة الترويجية ---
-st.markdown("""
+# --- 5. الواجهة الرئيسية ---
+st.markdown(f"""
     <div style="background-color:#001529; padding:25px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
-        <h1 style="color:white; margin:0;">🔬 نظام تحليل FFT والتشخيص الترددي</h1>
-        <p style="color:#FFD700; font-size:18px;">تحليل الاهتزاز الميكانيكي المتقدم لاكتشاف جذور الأعطال (Root Cause Analysis).</p>
+        <h1 style="color:white; margin:0; font-size:28px;">⚙️ منصة مراقبة المصانع والمعدات الميكانيكية</h1>
+        <p style="color:#FFD700; font-size:18px; font-weight:bold; margin-top:10px;">نظام هندسي متقدم للصيانة التنبؤية وتحليل الأصول</p>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 6. منطق التشخيص ---
-if vibration_val <= 2.8: status, color = "Good", "green"
-elif vibration_val <= 7.1: status, color = "Warning", "orange"
-else: status, color = "Critical", "red"
+# معايير التقييم ISO 10816
+if vib_input <= 2.8: status, color = "تشغيل آمن (A)", "green"
+elif vib_input <= 7.1: status, color = "تحذير - مراقبة (B/C)", "orange"
+else: status, color = "حرج - إيقاف فوري (D)", "red"
 
-# --- 7. قسم العرض الرئيسي ---
+st.write("")
 col1, col2 = st.columns([1, 2])
+
 with col1:
-    fig_gauge = go.Figure(go.Indicator(mode="gauge+number", value=vibration_val, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
+    st.subheader("📊 مؤشر الحالة اللحظي")
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number", value=vib_input,
+        gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]},
+               'steps': [{'range': [0, 2.8], 'color': "lightgreen"}, {'range': [2.8, 7.1], 'color': "yellow"}, {'range': [7.1, 15], 'color': "salmon"}]}))
+    fig_gauge.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
     st.plotly_chart(fig_gauge, use_container_width=True)
-    if st.button("📲 إرسال تقرير التشخيص"):
-        send_intelligent_alert(selected_factory, machine_selected, f"{vibration_val} mm/s", status, "FFT Analysis Completed")
-        st.success("تم الإرسال")
+    
+    if st.button("📲 إرسال تقرير الحالة للمشرف"):
+        send_technical_alert(factory, machine, f"{vib_input} mm/s", status, "Spectral FFT Analysis Triggered")
+        st.success("تم التوثيق وإرسال التنبيه")
 
 with col2:
-    st.subheader(f"🔍 تحليل الطيف الترددي (FFT Spectrum) - {machine_selected}")
-    
-    # محاكاة بيانات FFT حقيقية
-    freq = np.linspace(0, 500, 200) # التردد من 0 إلى 500 هرتز
-    base_rpm_freq = rpm_val / 60
-    
-    # إنشاء قمم ترددية (Peaks) بناءً على مستوى الاهتزاز
-    amplitude = (np.exp(-((freq - base_rpm_freq)**2) / 10) * vibration_val) + \
-                (np.exp(-((freq - 2*base_rpm_freq)**2) / 10) * (vibration_val/3)) + \
-                np.random.normal(0, 0.1, 200) # إضافة ضوضاء
+    st.subheader(f"🔬 تحليل الطيف الترددي FFT Spectrum")
+    # محاكاة FFT بناءً على معطيات المستخدم
+    freq = np.linspace(0, 500, 250)
+    base_freq = rpm_input / 60
+    # القمم الترددية (1X, 2X, 3X)
+    amplitude = (np.exp(-((freq - base_freq)**2) / 10) * vib_input) + \
+                (np.exp(-((freq - 2*base_freq)**2) / 8) * (vib_input*0.4)) + \
+                np.random.normal(0, 0.05, 250)
     
     fig_fft = go.Figure()
-    fig_fft.add_trace(go.Scatter(x=freq, y=amplitude, mode='lines', line=dict(color='#FFD700', width=2), fill='tozeroy'))
-    fig_fft.update_layout(xaxis_title="Frequency (Hz)", yaxis_title="Amplitude (mm/s)", height=300, margin=dict(l=20, r=20, t=20, b=20))
+    fig_fft.add_trace(go.Scatter(x=freq, y=amplitude, fill='tozeroy', line=dict(color='#FFD700')))
+    fig_fft.update_layout(xaxis_title="التردد (Hz)", yaxis_title="السعة (mm/s)", height=300, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig_fft, use_container_width=True)
-    
-    st.info(f"💡 الذروة الأساسية (1X) عند {base_rpm_freq:.1f} Hz تتناسب مع سرعة الدوران.")
+    st.caption(f"القمة الأساسية (1X) عند التردد {base_freq:.2f} هرتز.")
 
-# --- 8. سجل الأحداث ---
+# --- 6. سجل العمليات ---
 st.divider()
-st.subheader("📝 سجل عمليات النظام")
+st.subheader("📝 سجل المراقبة والعمليات الفنية")
 if st.session_state.event_log:
-    st.table(pd.DataFrame(st.session_state.event_log))
+    st.dataframe(pd.DataFrame(st.session_state.event_log), use_container_width=True)
+else:
+    st.info("السجل فارغ. سيتم توثيق أي تنبيه يتم إرساله هنا.")
 
-st.sidebar.caption("تم التطوير بواسطة م. مجاهد بشير - 2026")
+st.sidebar.caption("تطوير: م. مجاهد بشير | 2026")
