@@ -66,7 +66,7 @@ st.sidebar.write("📞 **الجوال:** `+966501318054` ")
 st.sidebar.success("✅ **متاح للتوظيف فوراً**")
 
 # روابط التواصل
-linkedin_url = "https://www.linkedin.com/in/mogahed-bashir" # تأكد من صحة الرابط
+linkedin_url = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/" # تأكد من صحة الرابط
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({linkedin_url})")
 
 st.sidebar.divider()
@@ -145,3 +145,4 @@ st.download_button(
 
 st.sidebar.divider()
 st.sidebar.caption("تم التطوير بواسطة م. مجاهد بشير - 2026")
+
