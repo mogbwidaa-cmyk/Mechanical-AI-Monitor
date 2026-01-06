@@ -114,15 +114,21 @@ if uploaded_file:
     with c2: st.image(edges, caption="تحليل الشروخ والتآكل", use_container_width=True)
 
 # --- زر التقرير ---
+# --- قسم زر التقرير المطور ---
 st.divider()
-if st.button("توليد تقرير PDF مع بيانات التواصل"):
-    pdf_content = create_pdf(vibration, status, temp, rul_prediction)
-    b64 = base64.b64encode(pdf_content).decode('utf-8')
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="Mogahed_Maintenance_Report.pdf">📥 تحميل التقرير (بيانات المهندس مجاهد)</a>'
-    st.markdown(href, unsafe_allow_html=True)
-if st.button("توليد تقرير PDF مع بيانات التواصل"):
-    pdf_content = create_pdf(vibration, status, temp, rul_prediction)
-    b64 = base64.b64encode(pdf_content).decode('utf-8')
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="Mogahed_Maintenance_Report.pdf">📥 اضغط هنا لتحميل التقرير</a>'
-    st.markdown(href, unsafe_allow_html=True)
-    st.success("تم تجهيز التقرير بنجاح!")
+if st.button("تجهيز ملف التقرير للتحميل"):
+    try:
+        # توليد محتوى الـ PDF
+        pdf_content = create_pdf(vibration, status, temp, rul_prediction)
+        
+        # استخدام زر التحميل الرسمي من Streamlit (أفضل للجوال)
+        st.download_button(
+            label="📥 اضغط هنا لتحميل تقرير المهندس مجاهد (PDF)",
+            data=pdf_content,
+            file_name=f"Mogahed_Report_{datetime.date.today()}.pdf",
+            mime="application/pdf"
+        )
+        st.success("تم تجهيز الملف بنجاح، اضغط على الزر الأزرق بالأعلى للتحميل.")
+    except Exception as e:
+        st.error(f"حدث خطأ: {e}")
+
