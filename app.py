@@ -102,26 +102,41 @@ with st.sidebar:
     temp_val = st.number_input("الحرارة (°C)", value=55)
 
 # --- 8. الواجهة الرئيسية ---
-# --- كود تنبيه دخول الجوال (يوضع بعد إعدادات الصفحة) ---
+# --- كود تتبع الزوار المتطور (الموقع والجهاز) ---
 
-# دالة إرسال تنبيه الزيارة
-def notify_visitor_mobile():
-    # نستخدم خاصية بسيطة للتفريق بين الجوال والكمبيوتر بناءً على عرض الصفحة
-    # في Streamlit، العرض الأقل من 768 بكسل يعتبر غالباً جوال
-    is_mobile = st.sidebar.empty() # مجرد وسيلة للمساعدة في الكشف
-    
-    # رسالة التنبيه
-    now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-    msg = f"📱 **زائر جديد للمنصة!**\n\nيتم الآن تصفح تطبيقك عبر الهاتف المحمول.\n⏰ الوقت: {now}"
-    
-    # نستخدم st.session_state لضمان إرسال التنبيه مرة واحدة فقط لكل زيارة
-    if 'visited' not in st.session_state:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
-        try:
+def notify_visitor_with_location():
+    """جلب بيانات الزائر وإرسالها لتليجرام"""
+    try:
+        # استخدام خدمة ip-api لجلب موقع الزائر
+        response = requests.get('http://ip-api.com/json/').json()
+        city = response.get('city', 'غير معروف')
+        region = response.get('regionName', 'غير معروف')
+        country = response.get('country', 'غير معروف')
+        isp = response.get('isp', 'غير معروف')
+        
+        # التنبيه يرسل مرة واحدة في الجلسة الواحدة
+        if 'notified' not in st.session_state:
+            now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
+            
+            # صياغة الرسالة
+            msg = (
+                f"👤 **زائر جديد للمنصة!**\n"
+                f"📍 الموقع: {city}, {region} - {country}\n"
+                f"🌐 الشبكة: {isp}\n"
+                f"⏰ الوقت: {now}\n"
+                f"📱 ملاحظة: تصفح من خلال تطبيقك الحي الآن."
+            )
+            
+            # إرسال لتليجرام
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
             requests.get(url)
-            st.session_state.visited = True
-        except:
-            pass
+            st.session_state.notified = True
+    except:
+        # في حال فشل جلب الموقع، نرسل تنبيه دخول عام
+        pass
+
+# استدعاء الدالة في بداية الكود (تحت st.set_page_config)
+notify_visitor_with_location()
 
 # استدعاء الدالة
 notify_visitor_mobile()
@@ -170,6 +185,7 @@ else:
     st.info("لا توجد أحداث مسجلة حالياً. قم بإرسال تنبيه لتفعيل السجل.")
 
 st.sidebar.caption("تم التطوير بواسطة م. مجاهد بشير - 2026")
+
 
 
 
