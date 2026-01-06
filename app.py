@@ -120,3 +120,9 @@ if st.button("توليد تقرير PDF مع بيانات التواصل"):
     b64 = base64.b64encode(pdf_content).decode('utf-8')
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="Mogahed_Maintenance_Report.pdf">📥 تحميل التقرير (بيانات المهندس مجاهد)</a>'
     st.markdown(href, unsafe_allow_html=True)
+if st.button("توليد تقرير PDF مع بيانات التواصل"):
+    pdf_content = create_pdf(vibration, status, temp, rul_prediction)
+    b64 = base64.b64encode(pdf_content).decode('utf-8')
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="Mogahed_Maintenance_Report.pdf">📥 اضغط هنا لتحميل التقرير</a>'
+    st.markdown(href, unsafe_allow_html=True)
+    st.success("تم تجهيز التقرير بنجاح!")
