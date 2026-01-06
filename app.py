@@ -16,6 +16,7 @@ if 'event_log' not in st.session_state:
 # --- 3. إعدادات التنبيهات (تليجرام) ---
 TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
+MY_PHONE = "+966501318054"
 
 def notify_visitor_with_location():
     """تتبع موقع الزائر وإرسال تنبيه فوري للهاتف"""
@@ -25,7 +26,7 @@ def notify_visitor_with_location():
             city = response.get('city', 'غير معروف')
             region = response.get('regionName', 'غير معروف')
             now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}\n📱 الحالة: تصفح نشط"
+            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}\n📞 للتواصل مع المطور: {MY_PHONE}"
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
             requests.get(url)
             st.session_state.notified = True
@@ -42,7 +43,8 @@ def send_technical_alert(source, asset, value, status, diagnostic):
         f"⚙️ المعدة: {asset}\n"
         f"📊 الاهتزاز: {value}\n"
         f"⚠️ التقييم: {status}\n"
-        f"🔍 التشخيص: {diagnostic}"
+        f"🔍 التشخيص: {diagnostic}\n"
+        f"📞 هاتف المهندس المسؤول: {MY_PHONE}"
     )
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
     try: 
@@ -55,6 +57,15 @@ with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
     st.title("المهندس مجاهد بشير")
     st.info("خبير صيانة ميكانيكية وأتمتة صناعية")
+    
+    # إضافة رقم الجوال بشكل بارز
+    st.markdown(f"📞 **للتواصل المباشر:**\n`{MY_PHONE}`")
+    
+    # رابط واتساب مباشر
+    whatsapp_url = f"https://wa.me/{MY_PHONE.replace('+', '')}"
+    st.markdown(f"""<a href="{whatsapp_url}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-Contact-25D366?style=for-the-badge&logo=whatsapp" width="100%"></a>""", unsafe_allow_html=True)
+    
+    st.divider()
     
     # التحقق من السيرة الذاتية
     if os.path.exists("cv.pdf"):
@@ -99,10 +110,8 @@ with col1:
 
 with col2:
     st.subheader(f"🔬 تحليل الطيف الترددي FFT Spectrum")
-    # محاكاة FFT بناءً على معطيات المستخدم
     freq = np.linspace(0, 500, 250)
     base_freq = rpm_input / 60
-    # القمم الترددية (1X, 2X, 3X)
     amplitude = (np.exp(-((freq - base_freq)**2) / 10) * vib_input) + \
                 (np.exp(-((freq - 2*base_freq)**2) / 8) * (vib_input*0.4)) + \
                 np.random.normal(0, 0.05, 250)
@@ -118,7 +127,5 @@ st.divider()
 st.subheader("📝 سجل المراقبة والعمليات الفنية")
 if st.session_state.event_log:
     st.dataframe(pd.DataFrame(st.session_state.event_log), use_container_width=True)
-else:
-    st.info("السجل فارغ. سيتم توثيق أي تنبيه يتم إرساله هنا.")
 
-st.sidebar.caption("تطوير: م. مجاهد بشير | 2026")
+st.sidebar.caption(f"تطوير: م. مجاهد بشير | {MY_PHONE}")
