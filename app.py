@@ -101,43 +101,24 @@ with st.sidebar:
     vibration_val = st.slider("الاهتزاز (mm/s)", 0.0, 15.0, 3.2)
     temp_val = st.number_input("الحرارة (°C)", value=55)
 
-# --- 8. الواجهة الرئيسية ---
+
+# --- 8. الواجهة الرئيسية (القسم الترويجي المطور) ---
 st.markdown("""
-    <div style="background-color:#001529; padding:20px; border-radius:10px; border-right: 8px solid #FFD700; text-align: right; direction: rtl;">
-        <h2 style="color:white; margin:0;">🚀 منصة م. مجاهد لأتمتة ومراقبة المصانع</h2>
-        <p style="color:#d9d9d9; font-size:18px;">نظام مراقبة مركزي مع سجل أحداث تفاعلي.</p>
+    <div style="background-color:#001529; padding:30px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl; box-shadow: 0px 4px 15px rgba(0,0,0,0.3);">
+        <h1 style="color:white; margin:0; font-family: 'Cairo', sans-serif;">🛡️ منصة م. مجاهد للتحول الرقمي الصناعي</h1>
+        <p style="color:#FFD700; font-size:20px; font-weight:bold; margin-top:10px;">نحو صيانة ذكية.. صفر توقف مفاجئ!</p>
+        <p style="color:#d9d9d9; font-size:16px; line-height:1.6;">
+            هل تعاني من توقف الإنتاج المتكرر؟ نظامنا المدعوم بالذكاء الاصطناعي يمنحك السيطرة الكاملة على أصولك الميكانيكية:
+            <br>✅ <b>تنبؤ مبكر:</b> كشف الأعطال قبل وقوعها بأسابيع.
+            <br>✅ <b>خفض التكاليف:</b> تقليل نفقات الصيانة الطارئة بنسبة تصل إلى 30%.
+            <br>✅ <b>ربط لحظي:</b> إشعارات مباشرة لجوال المهندس المسؤول لضمان سرعة الاستجابة.
+        </p>
+        <hr style="border-color: #334155;">
+        <p style="color:white; font-size:14px;">🛠️ <i>صمم هذا النظام بواسطة خبير الصيانة الميكانيكية م. مجاهد بشير لخدمة رؤية السعودية 2030 في توطين التقنيات الصناعية.</i></p>
     </div>
     """, unsafe_allow_html=True)
 
-# معالجة البيانات
-if vibration_val <= 2.8: status, color = "Good (Safe)", "green"
-elif vibration_val <= 7.1: status, color = "Warning", "orange"
-else: status, color = "Critical", "red"
-
-fault_type = diagnose_fault(vibration_val)
-days_left, fail_date = predict_failure_date(vibration_val)
-
-st.header(f"📊 حالة التشغيل: {selected_factory}")
-
-c1, c2, c3 = st.columns([1, 1, 1])
-with c1:
-    fig = go.Figure(go.Indicator(mode="gauge+number", value=vibration_val, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
-    st.plotly_chart(fig, use_container_width=True)
-
-with c2:
-    st.markdown("### 🤖 وحدة التنبؤ الذكي")
-    st.metric("تاريخ الصيانة المتوقع", f"{fail_date}")
-    st.write(f"الأيام المتبقية: **{days_left} يوم**")
-    if st.button("📲 إرسال تنبيه وتوثيق العملية"):
-        send_intelligent_alert(selected_factory, machine_selected, vibration_val, status, fault_type)
-        st.success("تم التنبيه والتوثيق في السجل")
-
-with c3:
-    st.markdown("### 📥 التقارير الفنية")
-    report_text = generate_pro_report(selected_factory, machine_selected, vibration_val, status, fault_type, temp_val, days_left, fail_date)
-    st.download_button(label="📥 تحميل التقرير (Technical Doc)", data=report_text, file_name=f"Report_{machine_selected}.txt", mime="text/plain", use_container_width=True)
-
-# --- 9. سجل أحداث الصيانة (الإضافة الجديدة) ---
+st.write("") # مسافة جمالية
 st.divider()
 st.subheader("📝 سجل أحداث الصيانة الأخير (Maintenance Log)")
 if st.session_state.event_log:
@@ -147,3 +128,4 @@ else:
     st.info("لا توجد أحداث مسجلة حالياً. قم بإرسال تنبيه لتفعيل السجل.")
 
 st.sidebar.caption("تم التطوير بواسطة م. مجاهد بشير - 2026")
+
