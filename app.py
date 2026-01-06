@@ -9,7 +9,7 @@ import os
 # --- 1. إعدادات الصفحة ---
 st.set_page_config(page_title="منصة م. مجاهد لمراقبة المعدات", page_icon="⚙️", layout="wide")
 
-# --- 2. إدارة السجل وتتبع الزوار ---
+# --- 2. إدارة السجل وتتبع الزوار (Session State) ---
 if 'event_log' not in st.session_state:
     st.session_state.event_log = []
 
@@ -18,10 +18,10 @@ TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
 def notify_visitor_with_location():
-    """تتبع موقع الزائر وإرسال تنبيه للجوال"""
+    """تتبع موقع الزائر وإرسال تنبيه للجوال عند دخول أي شخص للموقع"""
     if 'notified' not in st.session_state:
         try:
-            # جلب بيانات الموقع عبر الـ IP
+            # جلب بيانات الموقع عبر الـ IP للزائر
             response = requests.get('http://ip-api.com/json/', timeout=5).json()
             city = response.get('city', 'غير معروف')
             region = response.get('regionName', 'غير معروف')
@@ -32,20 +32,19 @@ def notify_visitor_with_location():
                 f"👤 **زائر جديد للمنصة!**\n"
                 f"📍 الموقع: {city}, {region} - {country}\n"
                 f"⏰ الوقت: {now}\n"
-                f"📱 ملاحظة: يتم التصفح الآن."
+                f"📱 ملاحظة: يتم التصفح الآن من جهاز جديد."
             )
-            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
-            # تصحيح بسيط لمتغير الرسالة هنا
-            url_fix = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
-            requests.get(url_fix)
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
+            requests.get(url)
             st.session_state.notified = True
         except:
             pass
 
-# استدعاء التنبيه فور فتح الموقع
+# استدعاء التنبيه الجغرافي فور فتح الموقع
 notify_visitor_with_location()
 
 def send_intelligent_alert(source, asset, value, status, diagnostic):
+    """إرسال تنبيهات فنية يدوية وتوثيقها في السجل"""
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
     message = (
         f"🚨 **تنبيه فني - المهندس مجاهد**\n\n"
@@ -66,7 +65,7 @@ current_dir = os.getcwd()
 pdf_files = [f for f in os.listdir(current_dir) if f.lower().endswith('.pdf')]
 cv_exists = len(pdf_files) > 0
 
-# --- 5. القائمة الجانبية ---
+# --- 5. القائمة الجانبية (Sidebar) ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
     st.title("👤 الملف المهني")
@@ -100,11 +99,11 @@ st.markdown("""
     <div style="background-color:#001529; padding:30px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
         <h1 style="color:white; margin:0;">🛡️ منصة م. مجاهد للتحول الرقمي الصناعي</h1>
         <p style="color:#FFD700; font-size:20px; font-weight:bold; margin-top:10px;">نحو صيانة ذكية.. صفر توقف مفاجئ!</p>
-        <p style="color:#d9d9d9; font-size:16px;">تقنيات الصيانة التنبؤية لخفض التكاليف بنسبة 30% وضمان استمرارية الإنتاج.</p>
+        <p style="color:#d9d9d9; font-size:16px;">تطبيق تقنيات الصيانة التنبؤية لخفض التكاليف بنسبة 30% وضمان كفاءة الأصول الميكانيكية.</p>
     </div>
     """, unsafe_allow_html=True)
 
-# معالجة البيانات والتحليل
+# معالجة البيانات (ISO 10816 Standard)
 if vibration_val <= 2.8: status, color = "Good", "green"
 elif vibration_val <= 7.1: status, color = "Warning", "orange"
 else: status, color = "Critical", "red"
@@ -112,5 +111,31 @@ else: status, color = "Critical", "red"
 days_left = max(1, int(150 / (vibration_val + 0.1)))
 fail_date = datetime.date.today() + datetime.timedelta(days=days_left)
 
-# --- تصحيح السطر الذي حدث فيه الخطأ ---
-st.header(f"📊 حالة التشغيل: {selected_factory
+# --- تصحيح الخطأ (Syntax Fix) ---
+st.header(f"📊 حالة التشغيل: {selected_factory}")
+
+c1, c2, c3 = st.columns([1, 1, 1])
+with c1:
+    fig = go.Figure(go.Indicator(mode="gauge+number", value=vibration_val, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
+    st.plotly_chart(fig, use_container_width=True)
+
+with c2:
+    st.markdown("### 🤖 التنبؤ والتحليل")
+    st.metric("تاريخ الصيانة المتوقع", f"{fail_date}")
+    st.write(f"الأيام المتبقية: **{days_left} يوم**")
+    if st.button("📲 إرسال تنبيه وتوثيق"):
+        send_intelligent_alert(selected_factory, machine_selected, f"{vibration_val} mm/s", status, "Vibration Analysis Triggered")
+        st.success("تم التوثيق في سجل الأحداث")
+
+with c3:
+    st.markdown("### 📥 التقارير الفنية")
+    report_text = f"Technical Report\nAsset: {machine_selected}\nStatus: {status}\nDate: {datetime.date.today()}\nFactory: {selected_factory}"
+    st.download_button(label="📥 تحميل التقرير", data=report_text, file_name=f"Report_{machine_selected}.txt", use_container_width=True)
+
+# سجل الأحداث التفاعلي
+st.divider()
+st.subheader("📝 سجل الأحداث والعمليات (Event Log)")
+if st.session_state.event_log:
+    st.table(pd.DataFrame(st.session_state.event_log))
+
+st.sidebar.caption("تم التطوير بواسطة م. مجاهد بشير - 2026")
