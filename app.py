@@ -13,10 +13,11 @@ st.set_page_config(page_title="منصة مراقبة المصانع والمعد
 if 'event_log' not in st.session_state:
     st.session_state.event_log = []
 
-# --- 3. إعدادات التنبيهات (تليجرام) ---
+# --- 3. إعدادات التنبيهات والروابط ---
 TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 MY_PHONE = "+966501318054"
+LINKEDIN_URL = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
 
 def notify_visitor_with_location():
     """تتبع موقع الزائر وإرسال تنبيه فوري للهاتف"""
@@ -26,7 +27,7 @@ def notify_visitor_with_location():
             city = response.get('city', 'غير معروف')
             region = response.get('regionName', 'غير معروف')
             now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}\n📞 للتواصل مع المطور: {MY_PHONE}"
+            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}\n📞 هاتف المطور: {MY_PHONE}"
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
             requests.get(url)
             st.session_state.notified = True
@@ -44,7 +45,7 @@ def send_technical_alert(source, asset, value, status, diagnostic):
         f"📊 الاهتزاز: {value}\n"
         f"⚠️ التقييم: {status}\n"
         f"🔍 التشخيص: {diagnostic}\n"
-        f"📞 هاتف المهندس المسؤول: {MY_PHONE}"
+        f"📞 هاتف المهندس: {MY_PHONE}"
     )
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
     try: 
@@ -52,18 +53,21 @@ def send_technical_alert(source, asset, value, status, diagnostic):
         st.session_state.event_log.insert(0, {"الوقت": now, "المنشأة": source, "المعدة": asset, "التقييم": status, "التشخيص": diagnostic})
     except: pass
 
-# --- 4. القائمة الجانبية (لوحة التحكم) ---
+# --- 4. القائمة الجانبية (لوحة التحكم والروابط) ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
     st.title("المهندس مجاهد بشير")
     st.info("خبير صيانة ميكانيكية وأتمتة صناعية")
     
-    # إضافة رقم الجوال بشكل بارز
     st.markdown(f"📞 **للتواصل المباشر:**\n`{MY_PHONE}`")
     
-    # رابط واتساب مباشر
-    whatsapp_url = f"https://wa.me/{MY_PHONE.replace('+', '')}"
-    st.markdown(f"""<a href="{whatsapp_url}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-Contact-25D366?style=for-the-badge&logo=whatsapp" width="100%"></a>""", unsafe_allow_html=True)
+    # أزرار التواصل الاجتماعي
+    c1, c2 = st.columns(2)
+    with c1:
+        whatsapp_url = f"https://wa.me/{MY_PHONE.replace('+', '')}"
+        st.markdown(f"""<a href="{whatsapp_url}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" width="100%"></a>""", unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""<a href="{LINKEDIN_URL}" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" width="100%"></a>""", unsafe_allow_html=True)
     
     st.divider()
     
