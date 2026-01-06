@@ -7,134 +7,100 @@ import requests
 import os
 
 # --- 1. إعدادات الصفحة ---
-st.set_page_config(page_title="منصة م. مجاهد لمراقبة المعدات", page_icon="⚙️", layout="wide")
+st.set_page_config(page_title="منصة م. مجاهد - تحليل FFT المتقدم", page_icon="⚙️", layout="wide")
 
-# --- 2. إدارة السجل وتتبع الزوار (Session State) ---
+# --- 2. إدارة السجل وتتبع الزوار ---
 if 'event_log' not in st.session_state:
     st.session_state.event_log = []
 
-# --- 3. إعدادات الربط والتنبيهات ---
+# --- 3. إعدادات التنبيهات ---
 TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
 def notify_visitor_with_location():
-    """تتبع موقع الزائر وإرسال تنبيه للجوال عند دخول أي شخص للموقع"""
     if 'notified' not in st.session_state:
         try:
-            # جلب بيانات الموقع عبر الـ IP للزائر
             response = requests.get('http://ip-api.com/json/', timeout=5).json()
             city = response.get('city', 'غير معروف')
             region = response.get('regionName', 'غير معروف')
-            country = response.get('country', 'غير معروف')
-            
             now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-            msg = (
-                f"👤 **زائر جديد للمنصة!**\n"
-                f"📍 الموقع: {city}, {region} - {country}\n"
-                f"⏰ الوقت: {now}\n"
-                f"📱 ملاحظة: يتم التصفح الآن من جهاز جديد."
-            )
+            msg = f"👤 **زائر جديد للمنصة!**\n📍 الموقع: {city}, {region}\n⏰ الوقت: {now}"
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown"
             requests.get(url)
             st.session_state.notified = True
-        except:
-            pass
+        except: pass
 
-# استدعاء التنبيه الجغرافي فور فتح الموقع
 notify_visitor_with_location()
 
 def send_intelligent_alert(source, asset, value, status, diagnostic):
-    """إرسال تنبيهات فنية يدوية وتوثيقها في السجل"""
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-    message = (
-        f"🚨 **تنبيه فني - المهندس مجاهد**\n\n"
-        f"📍 المصدر: {source}\n"
-        f"⚙️ المعدة: {asset}\n"
-        f"📊 القيمة: {value}\n"
-        f"⚠️ الحالة: {status}\n"
-        f"🔍 التشخيص: {diagnostic}"
-    )
+    message = f"🚨 **تنبيه فني**\n📍 المصدر: {source}\n⚙️ المعدة: {asset}\n📊 القيمة: {value}\n⚠️ الحالة: {status}\n🔍 التشخيص: {diagnostic}"
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}&parse_mode=Markdown"
     try: 
         requests.get(url)
         st.session_state.event_log.insert(0, {"الوقت": now, "المصدر": source, "المعدة": asset, "الحالة": status, "التشخيص": diagnostic})
     except: pass
 
-# --- 4. فحص ملف السيرة الذاتية ---
-current_dir = os.getcwd()
-pdf_files = [f for f in os.listdir(current_dir) if f.lower().endswith('.pdf')]
-cv_exists = len(pdf_files) > 0
-
-# --- 5. القائمة الجانبية (Sidebar) ---
+# --- 4. القائمة الجانبية ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
-    st.title("👤 الملف المهني")
-    st.markdown("### **المهندس مجاهد بشير**")
-    st.info("📍 المدينة المنورة، السعودية")
-    st.success("✅ **متاح للتوظيف فوراً**")
-    st.write("📞 `+966501318054` ")
-    
-    linkedin_url = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
-    st.markdown(f"""<a href="{linkedin_url}" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin" width="100%"></a>""", unsafe_allow_html=True)
-    
-    if cv_exists:
-        with open(pdf_files[0], "rb") as f:
-            st.download_button(label="📄 تحميل السيرة الذاتية (CV)", data=f, file_name=pdf_files[0], mime="application/pdf", use_container_width=True)
+    st.title("👤 المهندس مجاهد بشير")
+    st.success("✅ متاح للتوظيف فوراً")
+    # التأكد من وجود ملف CV
+    if os.path.exists("cv.pdf"):
+        with open("cv.pdf", "rb") as f:
+            st.download_button("📄 تحميل السيرة الذاتية (CV)", f, "cv.pdf", mime="application/pdf", use_container_width=True)
     
     st.divider()
-    st.header("🤖 روبوت التوظيف")
-    target_city = st.multiselect("مدن الاستهداف:", ["المدينة", "جدة", "نيوم", "ينبع"], default=["المدينة", "جدة"])
-    if st.button("🚀 إطلاق حملة التقديم"):
-        send_intelligent_alert("روبوت التوظيف", f"بحث في {target_city}", "نشط", "جاري البحث", "استهداف وظائف هندسية")
+    st.header("🏢 تحكم المنشأة")
+    selected_factory = st.selectbox("المصنع:", ["Madinah Plant", "Jeddah Industrial"])
+    machine_selected = st.selectbox("المعدة:", ["Pump P-01", "Motor M-02", "Compressor C-10"])
+    vibration_val = st.slider("مستوى الاهتزاز (mm/s)", 0.0, 15.0, 3.2)
+    rpm_val = st.number_input("سرعة الدوران (RPM)", value=1450)
 
-    st.divider()
-    st.header("🏢 إدارة المنشآت")
-    selected_factory = st.selectbox("اختر المنشأة:", ["Madinah Plant", "Jeddah Industrial", "Yanbu Plant"])
-    machine_selected = st.selectbox("المعدة:", ["Pump P-01", "Fan F-05", "Compressor C-10"])
-    vibration_val = st.slider("الاهتزاز (mm/s)", 0.0, 15.0, 3.2)
-    temp_val = st.number_input("الحرارة (°C)", value=55)
-
-# --- 6. الواجهة الترويجية الرئيسية ---
+# --- 5. الواجهة الترويجية ---
 st.markdown("""
-    <div style="background-color:#001529; padding:30px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
-        <h1 style="color:white; margin:0;">🛡️ منصة م. مجاهد للتحول الرقمي الصناعي</h1>
-        <p style="color:#FFD700; font-size:20px; font-weight:bold; margin-top:10px;">نحو صيانة ذكية.. صفر توقف مفاجئ!</p>
-        <p style="color:#d9d9d9; font-size:16px;">تطبيق تقنيات الصيانة التنبؤية لخفض التكاليف بنسبة 30% وضمان كفاءة الأصول الميكانيكية.</p>
+    <div style="background-color:#001529; padding:25px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
+        <h1 style="color:white; margin:0;">🔬 نظام تحليل FFT والتشخيص الترددي</h1>
+        <p style="color:#FFD700; font-size:18px;">تحليل الاهتزاز الميكانيكي المتقدم لاكتشاف جذور الأعطال (Root Cause Analysis).</p>
     </div>
     """, unsafe_allow_html=True)
 
-# معالجة البيانات (ISO 10816 Standard)
+# --- 6. منطق التشخيص ---
 if vibration_val <= 2.8: status, color = "Good", "green"
 elif vibration_val <= 7.1: status, color = "Warning", "orange"
 else: status, color = "Critical", "red"
 
-days_left = max(1, int(150 / (vibration_val + 0.1)))
-fail_date = datetime.date.today() + datetime.timedelta(days=days_left)
+# --- 7. قسم العرض الرئيسي ---
+col1, col2 = st.columns([1, 2])
+with col1:
+    fig_gauge = go.Figure(go.Indicator(mode="gauge+number", value=vibration_val, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
+    st.plotly_chart(fig_gauge, use_container_width=True)
+    if st.button("📲 إرسال تقرير التشخيص"):
+        send_intelligent_alert(selected_factory, machine_selected, f"{vibration_val} mm/s", status, "FFT Analysis Completed")
+        st.success("تم الإرسال")
 
-# --- تصحيح الخطأ (Syntax Fix) ---
-st.header(f"📊 حالة التشغيل: {selected_factory}")
+with col2:
+    st.subheader(f"🔍 تحليل الطيف الترددي (FFT Spectrum) - {machine_selected}")
+    
+    # محاكاة بيانات FFT حقيقية
+    freq = np.linspace(0, 500, 200) # التردد من 0 إلى 500 هرتز
+    base_rpm_freq = rpm_val / 60
+    
+    # إنشاء قمم ترددية (Peaks) بناءً على مستوى الاهتزاز
+    amplitude = (np.exp(-((freq - base_rpm_freq)**2) / 10) * vibration_val) + \
+                (np.exp(-((freq - 2*base_rpm_freq)**2) / 10) * (vibration_val/3)) + \
+                np.random.normal(0, 0.1, 200) # إضافة ضوضاء
+    
+    fig_fft = go.Figure()
+    fig_fft.add_trace(go.Scatter(x=freq, y=amplitude, mode='lines', line=dict(color='#FFD700', width=2), fill='tozeroy'))
+    fig_fft.update_layout(xaxis_title="Frequency (Hz)", yaxis_title="Amplitude (mm/s)", height=300, margin=dict(l=20, r=20, t=20, b=20))
+    st.plotly_chart(fig_fft, use_container_width=True)
+    
+    st.info(f"💡 الذروة الأساسية (1X) عند {base_rpm_freq:.1f} Hz تتناسب مع سرعة الدوران.")
 
-c1, c2, c3 = st.columns([1, 1, 1])
-with c1:
-    fig = go.Figure(go.Indicator(mode="gauge+number", value=vibration_val, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
-    st.plotly_chart(fig, use_container_width=True)
-
-with c2:
-    st.markdown("### 🤖 التنبؤ والتحليل")
-    st.metric("تاريخ الصيانة المتوقع", f"{fail_date}")
-    st.write(f"الأيام المتبقية: **{days_left} يوم**")
-    if st.button("📲 إرسال تنبيه وتوثيق"):
-        send_intelligent_alert(selected_factory, machine_selected, f"{vibration_val} mm/s", status, "Vibration Analysis Triggered")
-        st.success("تم التوثيق في سجل الأحداث")
-
-with c3:
-    st.markdown("### 📥 التقارير الفنية")
-    report_text = f"Technical Report\nAsset: {machine_selected}\nStatus: {status}\nDate: {datetime.date.today()}\nFactory: {selected_factory}"
-    st.download_button(label="📥 تحميل التقرير", data=report_text, file_name=f"Report_{machine_selected}.txt", use_container_width=True)
-
-# سجل الأحداث التفاعلي
+# --- 8. سجل الأحداث ---
 st.divider()
-st.subheader("📝 سجل الأحداث والعمليات (Event Log)")
+st.subheader("📝 سجل عمليات النظام")
 if st.session_state.event_log:
     st.table(pd.DataFrame(st.session_state.event_log))
 
