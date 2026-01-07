@@ -40,6 +40,11 @@ with st.sidebar:
     st.markdown("🎓 **باحث دراسات عليا - طاقة متجددة**")
     
     st.divider()
+    # إضافة زر رابط منصة الطاقة الشمسية هنا
+    st.markdown("🌐 **المنصات المتصلة:**")
+    st.markdown(f'''<a href="https://solar-plant.streamlit.app/" target="_blank"><button style="width:100%; height:40px; background-color:#FFD700; color:#001529; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">☀️ فتح منصة الطاقة الشمسية</button></a>''', unsafe_allow_html=True)
+    
+    st.divider()
     st.markdown(f"📞 **للتواصل:** `{MY_PHONE}`")
     c1, c2 = st.columns(2)
     with c1:
@@ -96,7 +101,7 @@ with col_g:
     st.plotly_chart(fig_gauge, use_container_width=True)
     if st.button("📤 إرسال تقرير التشخيص"):
         send_technical_alert("ASSET", f"المعدة: {machine}\nالاهتزاز: {vib_val}\nالحالة: {status}\nالتوصية: {recom}")
-        st.success("تم الإرسال!")
+        st.success("تم إرسال التقرير بنجاح!")
 
 with col_t:
     st.subheader("🔬 التحليل الترددي الرقمي (FFT)")
