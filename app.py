@@ -1,148 +1,173 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
+import datetime
 import requests
+import os
 
-# --- 1. الثوابت والقواعد الراسخة (لا تتغير) ---
-st.set_page_config(page_title="منصة مراقبة المصانع والمعدات الميكانيكية", page_icon="🏗️", layout="wide")
+# --- 1. إعدادات المنصة (نظام إدارة الأصول والطاقة) ---
+st.set_page_config(page_title="منصة م. مجاهد | مراقبة المصانع والطاقة", page_icon="🛡️", layout="wide")
 
+# --- 2. البيانات المرجعية والتواصل ---
 MY_PHONE = "+966501318054"
 LINKEDIN_URL = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
-PLATFORM_NAME = "منصة مراقبة المصانع والمعدات الميكانيكية"
-TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
+RESEARCH_URL = "https://ijsrset.com/paper/1468.pdf"
+TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
-# --- 2. التصميم الجديد: تباين عالي ووضوح فائق (Engineering Clean UI) ---
-st.markdown(f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Tajawal:wght@400;700&display=swap');
-    
-    /* تنسيق عام للمنصة */
-    .main {{ background-color: #ffffff; color: #1a1a1a; font-family: 'Tajawal', sans-serif; }}
-    
-    /* الهيدر الرئيسي */
-    .main-header {{
-        background-color: #f0f4f8;
-        padding: 25px;
-        border-radius: 12px;
-        border-bottom: 4px solid #1e3a8a;
-        text-align: right;
-        margin-bottom: 30px;
-    }}
-    
-    /* بطاقات المحتوى */
-    .content-card {{
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-    }}
-    
-    /* أزرار واضحة */
-    .stButton>button {{
-        background-color: #1e3a8a;
-        color: white;
-        border-radius: 6px;
-        border: none;
-        padding: 12px;
-        font-weight: bold;
-        width: 100%;
-    }}
-    .stButton>button:hover {{ background-color: #2563eb; color: white; }}
-    
-    /* العناوين */
-    h1, h2, h3 {{ color: #1e3a8a; font-weight: 700; }}
-    </style>
-    """, unsafe_allow_html=True)
+# --- 3. نظام التنبيهات الذكي ---
+def send_technical_alert(asset, value, status, recommendation):
+    now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
+    msg = (f"🚨 **تقرير فني عاجل**\n\n"
+           f"⚙️ المعدة: {asset}\n"
+           f"📊 الاهتزاز: {value} mm/s\n"
+           f"⚠️ الحالة: {status}\n"
+           f"💡 التوصية: {recommendation}\n"
+           f"👤 المهندس المسؤول: م. مجاهد بشير\n"
+           f"📞 للتواصل: {MY_PHONE}")
+    try:
+        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown")
+        return True
+    except: return False
 
-# --- 3. القائمة الجانبية (الثوابت المتفق عليها) ---
+# --- 4. القائمة الجانبية (الهوية المهنية والأكاديمية) ---
 with st.sidebar:
-    st.markdown(f"<h2 style='text-align: center; color: #1e3a8a;'>م. مجاهد بشير</h2>", unsafe_allow_html=True)
-    st.write("---")
+    st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
+    st.title("المهندس مجاهد بشير")
+    st.markdown("🎓 **باحث دراسات عليا - طاقة متجددة**")
+    st.success("📝 **مؤلف بحث علمي منشور دولياً (2016)**")
+    st.caption("Bio Gas Production from Municipal Solid Waste")
     
-    # قائمة التنقل بوضوح عالي
-    page = st.radio("القائمة الفنية:", 
-                    ["🏠 لوحة التحكم الرئيسية", "🛠️ الصيانة وتحليل الاهتزاز", "🌱 كفاءة الطاقة الشمسية", "🤖 حلول الأتمتة والذكاء"])
+    # أزرار التواصل السريع
+    st.markdown(f"📞 **للتواصل المباشر:** `{MY_PHONE}`")
+    c1, c2 = st.columns(2)
+    with c1:
+        whatsapp_url = f"https://wa.me/{MY_PHONE.replace('+', '')}"
+        st.markdown(f'''<a href="{whatsapp_url}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" width="100%"></a>''', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'''<a href="{LINKEDIN_URL}" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" width="100%"></a>''', unsafe_allow_html=True)
     
-    st.write("---")
-    st.markdown(f"📞 **للتواصل:** `{MY_PHONE}`")
+    st.divider()
+    # قسم الأبحاث والتحميلات
+    st.markdown("📄 **الوثائق المهنية:**")
+    if os.path.exists("cv.pdf"):
+        with open("cv.pdf", "rb") as f:
+            st.download_button("📂 تحميل السيرة الذاتية (CV)", f, "cv.pdf", use_container_width=True)
     
-    # أزرار تواصل احترافية وواضحة
-    st.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-التواصل%20السريع-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/{MY_PHONE.replace('+', '')})")
-    st.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-الملف%20الشخصي-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)]({LINKEDIN_URL})")
+    st.markdown(f'''<a href="{RESEARCH_URL}" target="_blank"><button style="width:100%; height:40px; background-color:#1B5E20; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">🔬 عرض الورقة البحثية</button></a>''', unsafe_allow_html=True)
 
-# --- 4. محتوى الأقسام ---
-
-if page == "🏠 لوحة التحكم الرئيسية":
-    st.markdown(f"""
-        <div class="main-header">
-            <h1>🛡️ {PLATFORM_NAME}</h1>
-            <p style="font-size: 1.1em; color: #4a5568;">النظام الموحد لمراقبة أداء الأصول وتطوير حلول الطاقة المستدامة</p>
-        </div>
-    """, unsafe_allow_html=True)
+    st.divider()
+    st.header("⚙️ مدخلات مراقبة الأصول")
+    factory = st.selectbox("المرفق الصناعي:", ["مجمع الغاز والزيت", "محطة الطاقة المتجددة", "وحدة إدارة النفايات"])
+    machine = st.selectbox("المعدة المستهدفة:", ["P-101 Centrifugal Pump", "C-202 Compressor", "Bio-Gas Generator"])
+    vib_val = st.slider("Overall Vibration (mm/s RMS):", 0.0, 15.0, 3.2)
+    rpm_val = st.number_input("Operating Speed (RPM):", value=1450)
+# --- إضافة قسم الروبوت الذكي داخل المنصة ---
+with st.expander("🤖 تفعيل وكيل التوظيف الذكي (نظام 2026)"):
+    st.markdown("### 🚀 مركز تحكم الروبوت الاستراتيجي")
+    col_bot1, col_bot2 = st.columns([1, 1])
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("<div class='content-card'><h3>🎯 أهداف المنصة</h3><p>دمج أنظمة الرصد اللحظي مع التحليلات المتقدمة لتقليل فترات التوقف وتحسين استغلال الموارد الطاقية.</p></div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='content-card'><h3>📝 التوثيق الهندسي</h3><p>كافة العمليات والتحليلات مبنية على معايير الجودة الميكانيكية (ISO) والأبحاث العلمية الموثقة.</p></div>", unsafe_allow_html=True)
-
-elif page == "🛠️ الصيانة وتحليل الاهتزاز":
-    st.header("🛠️ نظام تحليل الاهتزاز الرقمي (FFT)")
-    
-    col_input, col_plot = st.columns([1, 2])
-    
-    with col_input:
-        st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-        v = st.slider("مستوى الاهتزاز (mm/s RMS):", 0.0, 15.0, 3.5)
-        rpm = st.number_input("سرعة الدوران (RPM):", 500, 5000, 1500)
-        if st.button("إرسال تقرير التشخيص"):
-            requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text=🚨 تقرير من {PLATFORM_NAME}: الاهتزاز {v} mm/s")
-            st.success("تم إرسال التقرير بنجاح")
-        st.markdown("</div>", unsafe_allow_html=True)
+    with col_bot1:
+        mode = st.radio("وضع تشغيل الروبوت:", 
+                        ["التقديم التلقائي المخصص (Auto-Apply)", "تحليل فجوة المهارات في السوق"])
         
-    with col_plot:
-        x = np.linspace(0, 500, 400)
-        y = (np.exp(-((x - (rpm/60))**2)/20) * v) + (np.exp(-((x - 2*(rpm/60))**2)/40) * (v/2))
-        fig = go.Figure(go.Scatter(x=x, y=y, fill='tozeroy', line_color='#1e3a8a'))
-        fig.update_layout(plot_bgcolor='white', paper_bgcolor='white', height=350, margin=dict(l=0,r=0,t=10,b=0))
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#f0f0f0')
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#f0f0f0')
-        st.plotly_chart(fig, use_container_width=True)
+        if st.button("تفعيل الوكيل الذكي الآن ⚡"):
+            # دالة إرسال التنبيه لتليجرام
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            msg = f"🤖 **تنبيه الروبوت:** تم تفعيل وضع {mode}\n👤 المهندس: مجاهد بشير\n📅 {timestamp}"
+            requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}")
+            
+            st.balloons()
+            st.success("الروبوت باشر العمل وسيوافيك بالنتائج على تليجرام.")
 
-elif page == "🌱 كفاءة الطاقة الشمسية":
-    st.header("🌱 مراقبة ومعايرة الكفاءة (PV System)")
-    
-    st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    temp = c1.slider("الحرارة المحيطة (C°)", 10, 65, 30)
-    dust = c2.slider("نسبة تراكم الغبار (%)", 0, 100, 20)
-    wind = c3.slider("سرعة الرياح (m/s)", 0, 25, 5)
-    
-    eff = max(0, 22.0 - (temp-25)*0.08 - dust*0.15 + wind*0.05)
-    st.markdown(f"<div style='text-align: center;'><h3>كفاءة النظام الحالية: <span style='color: #1e3a8a;'>{eff:.2f}%</span></h3></div>", unsafe_allow_html=True)
-    st.progress(eff/25)
-    st.markdown("</div>", unsafe_allow_html=True)
+    with col_bot2:
+        # محاكاة خريطة الفرص بناءً على بحثك
+        market_data = pd.DataFrame({
+            'التخصص': ['الهيدروجين', 'تحويل النفايات (بحثك)', 'صيانة التوربينات'],
+            'المطابقة': [85, 100, 75]
+        })
+        fig_bot = go.Figure(go.Bar(
+            x=market_data['التخصص'], y=market_data['المطابقة'],
+            marker_color=['#00d2ff', '#00ff88', '#FFD700']
+        ))
+        fig_bot.update_layout(title="نسبة مطابقة بروفايلك مع السوق", height=200, margin=dict(t=30, b=0, l=0, r=0))
+        st.plotly_chart(fig_bot, use_container_width=True)
 
-elif page == "🤖 حلول الأتمتة والذكاء":
-    st.markdown(f"""
-        <div class="content-card" style="border-right: 8px solid #10b981;">
-            <h2 style="color: #10b981;">🤖 أتمتة الأعمال مع المهندس مجاهد</h2>
-            <p style="font-size: 1.1em; line-height: 1.6;">
-            يتمتع المهندس <b>مجاهد بشير</b> بخبرة واسعة في <b>أتمتة الأعمال الصناعية المختلفة</b>، محولاً التحديات التشغيلية إلى حلول رقمية ذكية.
-            <br><br>
-            <b>💎 مميزات حلولنا للأتمتة:</b><br>
-            • <b>تحسين التكاليف:</b> تقليل الهدر الطاقي والميكانيكي عبر المراقبة الذكية.<br>
-            • <b>نظم الاستجابة اللحظية:</b> أتمتة التقارير والتنبيهات لضمان التدخل السريع.<br>
-            • <b>تحليل البيانات الضخمة:</b> معالجة بيانات الحساسات لاتخاذ قرارات دقيقة.<br>
-            • <b>التوافق مع رؤية 2030:</b> حلول تدعم التحول الرقمي والاستدامة الصناعية.
-            </p>
-        </div>
+    st.info(f"🔗 **الروبوت مرتبط ببحثك:** {RESEARCH_TITLE}")
+    
+# --- 5. الواجهة الرئيسية (Dashboard) ---
+st.markdown(f"""
+    <div style="background-color:#001529; padding:25px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
+        <h1 style="color:white; margin:0; font-size:26px;">🛡️ منصة مراقبة المصانع والمعدات الميكانيكية</h1>
+        <p style="color:#FFD700; font-size:18px; font-weight:bold; margin-top:10px;">نظام هندسي متقدم للصيانة التنبؤية وتحولات الطاقة</p>
+    </div>
     """, unsafe_allow_html=True)
-    if st.button("🚀 تفعيل نظام التواصل الذكي للأتمتة"):
-        st.balloons()
-        requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text=🤖 طلب استشارة أتمتة من المهندس مجاهد")
 
-st.sidebar.caption(f"© 2026 {PLATFORM_NAME}")
+# معايير التقييم ISO 10816
+if vib_val <= 2.8: 
+    status, color = "آمن (Safe)", "green"
+    recom = "استمرار التشغيل العادي ومراقبة الدورية."
+elif vib_val <= 7.1: 
+    status, color = "تحذير (Caution)", "orange"
+    recom = "فحص التزييت وضبط المحاذاة في نافذة الصيانة القادمة."
+else: 
+    status, color = "حرج (Critical)", "red"
+    recom = "إيقاف فوري للمعدة وإجراء تحليل الأسباب الجذرية (RCA)."
+
+# عرض البيانات الفنية
+st.write("")
+col_g, col_t = st.columns([1, 2])
+
+with col_g:
+    st.subheader("📊 مؤشر الحالة الفنية")
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number", value=vib_val,
+        title={'text': f"الحالة: {status}"},
+        gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]},
+               'steps': [{'range': [0, 2.8], 'color': "#a3cfbb"}, 
+                        {'range': [2.8, 7.1], 'color': "#ffeeba"}, 
+                        {'range': [7.1, 15], 'color': "#f8d7da"}]}))
+    st.plotly_chart(fig_gauge, use_container_width=True)
+    
+    if st.button("📤 توليد وإرسال تقرير التشخيص"):
+        if send_technical_alert(machine, vib_val, status, recom):
+            st.success("تم إرسال التقرير المعتمد للهاتف")
+
+with col_t:
+    st.subheader("🔬 التحليل الترددي اللحظي (FFT Analysis)")
+    # محاكاة FFT بناءً على سرعة المعدة المكتوبة
+    freq = np.linspace(0, 500, 250)
+    base_f = rpm_val / 60
+    amp = (np.exp(-((freq - base_f)**2) / 10) * vib_val) + (np.exp(-((freq - 2*base_f)**2) / 15) * (vib_val/3)) + np.random.normal(0, 0.05, 250)
+    fig_fft = go.Figure(go.Scatter(x=freq, y=amp, fill='tozeroy', line=dict(color='#FFD700'), name="Spectrum"))
+    fig_fft.update_layout(xaxis_title="Frequency (Hz)", yaxis_title="Amplitude (mm/s)", margin=dict(l=10, r=10, t=10, b=10))
+    st.plotly_chart(fig_fft, use_container_width=True)
+
+# --- 6. قسم الأبحاث العلمية (تحويل النفايات إلى طاقة) ---
+st.divider()
+st.subheader("🌱 السجل البحثي والأكاديمي (International Research)")
+c_res1, c_res2 = st.columns([2, 1])
+
+with c_res1:
+    st.markdown(f"""
+    ### **اسم البحث:** Bio Gas Production from Municipal Solid Waste
+    **تاريخ النشر:** يونيو 2016  
+    **المجلة:** IJSRSET | **الاعتماد:** ISSN: 2394-4099  
+    **الملخص الفني:** تناول البحث دراسة تجريبية ونظرية لتحويل النفايات الصلبة إلى طاقة حيوية مستدامة، مع تحليل العوامل الميكانيكية والكيميائية المؤثرة على كفاءة الإنتاج.
+    
+    [🔗 رابط الوصول المباشر للبحث]({RESEARCH_URL})
+    """)
+
+with c_res2:
+    st.info("""
+    **مجالات التخصص:**
+    - الصيانة التنبؤية (Vibration Analysis)
+    - الطاقة المتجددة (Bio-Energy)
+    - إدارة الأصول الصناعية (Asset Integrity)
+    """)
+
+st.sidebar.caption(f"تطوير م. مجاهد بشير © 2026 | {MY_PHONE}")
+
+
