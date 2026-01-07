@@ -2,82 +2,138 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 import datetime
 import requests
 import os
 
-# --- 1. إعدادات النظام ---
-st.set_page_config(page_title="منصة مراقبة المصانع والمعدات الميكانيكية", page_icon="⚙️", layout="wide")
+# --- 1. إعدادات المنصة (نظام إدارة الأصول والطاقة) ---
+st.set_page_config(page_title="منصة م. مجاهد | مراقبة المصانع والطاقة", page_icon="🛡️", layout="wide")
 
-# --- 2. بيانات التواصل الأساسية ---
+# --- 2. البيانات المرجعية والتواصل ---
 MY_PHONE = "+966501318054"
 LINKEDIN_URL = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
+RESEARCH_URL = "https://ijsrset.com/paper/1468.pdf"
 TELEGRAM_TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
-# --- 3. القائمة الجانبية (هوية المهندس وأدوات التواصل) ---
+# --- 3. نظام التنبيهات الذكي ---
+def send_technical_alert(asset, value, status, recommendation):
+    now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
+    msg = (f"🚨 **تقرير فني عاجل**\n\n"
+           f"⚙️ المعدة: {asset}\n"
+           f"📊 الاهتزاز: {value} mm/s\n"
+           f"⚠️ الحالة: {status}\n"
+           f"💡 التوصية: {recommendation}\n"
+           f"👤 المهندس المسؤول: م. مجاهد بشير\n"
+           f"📞 للتواصل: {MY_PHONE}")
+    try:
+        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}&parse_mode=Markdown")
+        return True
+    except: return False
+
+# --- 4. القائمة الجانبية (الهوية المهنية والأكاديمية) ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/6840/6840478.png", width=80)
     st.title("المهندس مجاهد بشير")
-    st.info("خبير صيانة ميكانيكية وأتمتة صناعية")
+    st.markdown("🎓 **باحث دراسات عليا - طاقة متجددة**")
+    st.success("📝 **مؤلف بحث علمي منشور دولياً (2016)**")
+    st.caption("Bio Gas Production from Municipal Solid Waste")
     
-    # عرض رقم الجوال بوضوح
-    st.markdown(f"📞 **للتواصل المباشر:**\n`{MY_PHONE}`")
-    
-    # أزرار التواصل الاجتماعي (واتساب ولينكد إن) بجانب بعضهما
-    col_ws, col_li = st.columns(2)
-    with col_ws:
-        whatsapp_api = f"https://wa.me/{MY_PHONE.replace('+', '')}"
-        st.markdown(f"""<a href="{whatsapp_api}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" width="100%"></a>""", unsafe_allow_html=True)
-    with col_li:
-        st.markdown(f"""<a href="{LINKEDIN_URL}" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" width="100%"></a>""", unsafe_allow_html=True)
+    # أزرار التواصل السريع
+    st.markdown(f"📞 **للتواصل المباشر:** `{MY_PHONE}`")
+    c1, c2 = st.columns(2)
+    with c1:
+        whatsapp_url = f"https://wa.me/{MY_PHONE.replace('+', '')}"
+        st.markdown(f'''<a href="{whatsapp_url}" target="_blank"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" width="100%"></a>''', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'''<a href="{LINKEDIN_URL}" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" width="100%"></a>''', unsafe_allow_html=True)
     
     st.divider()
-    
-    # زر تحميل السيرة الذاتية (CV)
+    # قسم الأبحاث والتحميلات
+    st.markdown("📄 **الوثائق المهنية:**")
     if os.path.exists("cv.pdf"):
         with open("cv.pdf", "rb") as f:
-            st.download_button("📄 تحميل السيرة الذاتية (CV)", f, "cv.pdf", mime="application/pdf", use_container_width=True)
+            st.download_button("📂 تحميل السيرة الذاتية (CV)", f, "cv.pdf", use_container_width=True)
     
-    st.divider()
-    st.header("⚙️ مدخلات النظام")
-    factory = st.selectbox("الوحدة الصناعية:", ["مجمع الصناعات بجدة", "مصفاة ينبع", "مدينة نيوم الصناعية"])
-    machine = st.selectbox("المعدة:", ["مضخة P-101", "ضاغط C-202", "محرك F-305"])
-    vib_input = st.slider("الاهتزاز (mm/s RMS):", 0.0, 15.0, 3.2)
-    rpm_input = st.number_input("سرعة الدوران (RPM):", value=1450)
+    st.markdown(f'''<a href="{RESEARCH_URL}" target="_blank"><button style="width:100%; height:40px; background-color:#1B5E20; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">🔬 عرض الورقة البحثية</button></a>''', unsafe_allow_html=True)
 
-# --- 4. الواجهة الرئيسية وتحليل البيانات ---
+    st.divider()
+    st.header("⚙️ مدخلات مراقبة الأصول")
+    factory = st.selectbox("المرفق الصناعي:", ["مجمع الغاز والزيت", "محطة الطاقة المتجددة", "وحدة إدارة النفايات"])
+    machine = st.selectbox("المعدة المستهدفة:", ["P-101 Centrifugal Pump", "C-202 Compressor", "Bio-Gas Generator"])
+    vib_val = st.slider("Overall Vibration (mm/s RMS):", 0.0, 15.0, 3.2)
+    rpm_val = st.number_input("Operating Speed (RPM):", value=1450)
+
+# --- 5. الواجهة الرئيسية (Dashboard) ---
 st.markdown(f"""
     <div style="background-color:#001529; padding:25px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
-        <h1 style="color:white; margin:0; font-size:26px;">⚙️ منصة مراقبة المصانع والمعدات الميكانيكية</h1>
-        <p style="color:#FFD700; font-size:18px; font-weight:bold; margin-top:10px;">تحليل متقدم للأصول الميكانيكية والصيانة التنبؤية</p>
+        <h1 style="color:white; margin:0; font-size:26px;">🛡️ منصة مراقبة المصانع والمعدات الميكانيكية</h1>
+        <p style="color:#FFD700; font-size:18px; font-weight:bold; margin-top:10px;">نظام هندسي متقدم للصيانة التنبؤية وتحولات الطاقة</p>
     </div>
     """, unsafe_allow_html=True)
 
-# معايير التقييم وتوليد التقرير
-if vib_input <= 2.8: status, color = "آمن", "green"
-elif vib_input <= 7.1: status, color = "تحذير", "orange"
-else: status, color = "حرج", "red"
+# معايير التقييم ISO 10816
+if vib_val <= 2.8: 
+    status, color = "آمن (Safe)", "green"
+    recom = "استمرار التشغيل العادي ومراقبة الدورية."
+elif vib_val <= 7.1: 
+    status, color = "تحذير (Caution)", "orange"
+    recom = "فحص التزييت وضبط المحاذاة في نافذة الصيانة القادمة."
+else: 
+    status, color = "حرج (Critical)", "red"
+    recom = "إيقاف فوري للمعدة وإجراء تحليل الأسباب الجذرية (RCA)."
 
+# عرض البيانات الفنية
 st.write("")
-c1, c2 = st.columns([1, 2])
+col_g, col_t = st.columns([1, 2])
 
-with c1:
-    st.subheader("📊 مؤشر الحالة")
-    fig_g = go.Figure(go.Indicator(mode="gauge+number", value=vib_input, gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]}}))
-    st.plotly_chart(fig_g, use_container_width=True)
+with col_g:
+    st.subheader("📊 مؤشر الحالة الفنية")
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number", value=vib_val,
+        title={'text': f"الحالة: {status}"},
+        gauge={'bar': {'color': color}, 'axis': {'range': [0, 15]},
+               'steps': [{'range': [0, 2.8], 'color': "#a3cfbb"}, 
+                        {'range': [2.8, 7.1], 'color': "#ffeeba"}, 
+                        {'range': [7.1, 15], 'color': "#f8d7da"}]}))
+    st.plotly_chart(fig_gauge, use_container_width=True)
     
-    if st.button("📤 إرسال التقرير للمهندس مجاهد"):
-        msg = f"🚨 تنبيه فني جديد\nالمعدة: {machine}\nالحالة: {status}\nالاهتزاز: {vib_input}\n📞 للتواصل: {MY_PHONE}"
-        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}")
-        st.success("تم الإرسال والتوثيق بنجاح")
+    if st.button("📤 توليد وإرسال تقرير التشخيص"):
+        if send_technical_alert(machine, vib_val, status, recom):
+            st.success("تم إرسال التقرير المعتمد للهاتف")
 
-with c2:
-    st.subheader("🔬 تحليل الطيف الترددي FFT")
-    freq = np.linspace(0, 500, 200)
-    base_f = rpm_input / 60
-    amp = (np.exp(-((freq - base_f)**2) / 10) * vib_input) + np.random.normal(0, 0.05, 200)
-    fig_f = go.Figure(go.Scatter(x=freq, y=amp, fill='tozeroy', line=dict(color='#FFD700')))
-    st.plotly_chart(fig_f, use_container_width=True)
+with col_t:
+    st.subheader("🔬 التحليل الترددي اللحظي (FFT Analysis)")
+    # محاكاة FFT بناءً على سرعة المعدة المكتوبة
+    freq = np.linspace(0, 500, 250)
+    base_f = rpm_val / 60
+    amp = (np.exp(-((freq - base_f)**2) / 10) * vib_val) + (np.exp(-((freq - 2*base_f)**2) / 15) * (vib_val/3)) + np.random.normal(0, 0.05, 250)
+    fig_fft = go.Figure(go.Scatter(x=freq, y=amp, fill='tozeroy', line=dict(color='#FFD700'), name="Spectrum"))
+    fig_fft.update_layout(xaxis_title="Frequency (Hz)", yaxis_title="Amplitude (mm/s)", margin=dict(l=10, r=10, t=10, b=10))
+    st.plotly_chart(fig_fft, use_container_width=True)
 
-st.sidebar.caption(f"تم التطوير بواسطة م. مجاهد بشير | {MY_PHONE}")
+# --- 6. قسم الأبحاث العلمية (تحويل النفايات إلى طاقة) ---
+st.divider()
+st.subheader("🌱 السجل البحثي والأكاديمي (International Research)")
+c_res1, c_res2 = st.columns([2, 1])
+
+with c_res1:
+    st.markdown(f"""
+    ### **اسم البحث:** Bio Gas Production from Municipal Solid Waste
+    **تاريخ النشر:** يونيو 2016  
+    **المجلة:** IJSRSET | **الاعتماد:** ISSN: 2394-4099  
+    **الملخص الفني:** تناول البحث دراسة تجريبية ونظرية لتحويل النفايات الصلبة إلى طاقة حيوية مستدامة، مع تحليل العوامل الميكانيكية والكيميائية المؤثرة على كفاءة الإنتاج.
+    
+    [🔗 رابط الوصول المباشر للبحث]({RESEARCH_URL})
+    """)
+
+with c_res2:
+    st.info("""
+    **مجالات التخصص:**
+    - الصيانة التنبؤية (Vibration Analysis)
+    - الطاقة المتجددة (Bio-Energy)
+    - إدارة الأصول الصناعية (Asset Integrity)
+    """)
+
+st.sidebar.caption(f"تطوير م. مجاهد بشير © 2026 | {MY_PHONE}")
