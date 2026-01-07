@@ -2,9 +2,10 @@ import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
 import requests
+import datetime
 
-# --- 1. الثوابت المتفق عليها (لا تتغير) ---
-st.set_page_config(page_title="منصة مراقبة المصانع والمعدات الميكانيكية", page_icon="🏗️", layout="wide")
+# --- 1. الثوابت والقواعد الراسخة (لا تتغير) ---
+st.set_page_config(page_title="منصة مراقبة المصانع والمعدات الميكانيكية", page_icon="🛡️", layout="wide")
 
 MY_PHONE = "+966501318054"
 LINKEDIN_URL = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
@@ -12,99 +13,60 @@ PLATFORM_NAME = "منصة مراقبة المصانع والمعدات المي�
 TOKEN = "8050369942:AAEN-n0Qn-kAmu_9k-lqZ9Fe-tsAOSd44OA"
 CHAT_ID = "6241195886"
 
-# --- 2. تحسين مظهر CSS ---
+# --- 2. التصميم البصري المتقدم (Professional CSS) ---
 st.markdown("""
     <style>
-    .main { background-color: #f5f7f9; }
-    .stButton>button { width: 100%; border-radius: 8px; height: 3em; background-color: #1E3A8A; color: white; border: none; font-weight: bold; transition: 0.3s; }
-    .stButton>button:hover { background-color: #3b82f6; border: none; }
-    .card { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border-right: 5px solid #1E3A8A; }
-    h1, h2, h3 { color: #1E3A8A; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+    html, body, [class*="css"] { font-family: 'Tajawal', sans-serif; text-align: right; }
+    .main { background-color: #0b111a; color: #e1e1e1; }
+    .stMetric { background-color: #161b22; padding: 15px; border-radius: 10px; border: 1px solid #30363d; }
+    .info-card { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding: 25px; border-radius: 15px; color: white; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+    .feature-box { background-color: #161b22; padding: 20px; border-radius: 12px; border-right: 5px solid #3b82f6; margin-bottom: 15px; }
+    .stButton>button { background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; border-radius: 8px; font-weight: bold; transition: 0.5s; }
+    .stButton>button:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(59,130,246,0.4); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. القائمة الجانبية المنسقة ---
+# --- 3. القائمة الجانبية (الهوية الثابتة) ---
 with st.sidebar:
-    st.markdown(f"<div style='text-align: center;'><img src='https://cdn-icons-png.flaticon.com/512/6840/6840478.png' width='80'><br><h3>م. مجاهد بشير</h3></div>", unsafe_allow_html=True)
-    st.write("---")
+    st.markdown(f"<div style='text-align: center;'><img src='https://cdn-icons-png.flaticon.com/512/6840/6840478.png' width='100'><br><h2 style='color:white;'>م. مجاهد بشير</h2></div>", unsafe_allow_html=True)
+    st.markdown("---")
     
-    # اختيار الأقسام بأيقونات
-    page = st.selectbox("انتقل إلى القسم:", ["🏠 الرئيسية", "🛠️ الصيانة التنبؤية", "🌱 كفاءة الخلايا الضوئية", "🤖 أتمتة الذكاء الاصطناعي"])
+    # قائمة التنقل
+    menu = st.radio("القائمة الرئيسية", ["🏠 مركز التحكم", "🛠️ الصيانة التنبؤية (Vibration)", "🌱 هندسة الطاقة (PV System)", "🤖 حلول الأتمتة (AI)"])
     
-    st.write("---")
-    st.markdown(f"📱 **تواصل مباشر:**")
-    st.markdown(f"[`{MY_PHONE}`](tel:{MY_PHONE})")
+    st.markdown("---")
+    st.markdown(f"📱 **للتواصل المباشر:**")
+    st.code(MY_PHONE, language="text")
     
-    # أزرار التواصل بشكل أنيق
     c1, c2 = st.columns(2)
     with c1: st.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/{MY_PHONE.replace('+', '')})")
     with c2: st.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)]({LINKEDIN_URL})")
 
-# --- 4. محتوى الصفحات بتنسيق محسّن ---
+# --- 4. محتوى المنصة ---
 
-if page == "🏠 الرئيسية":
-    st.markdown(f"<h1 style='text-align: center;'>🛡️ {PLATFORM_NAME}</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 1.2em; color: #666;'>بوابة هندسية متطورة لإدارة الأصول والطاقة المستدامة</p>", unsafe_allow_html=True)
+# --- الصفحة الرئيسية ---
+if menu == "🏠 مركز التحكم":
+    st.markdown(f"<div class='info-card'><h1>🛡️ {PLATFORM_NAME}</h1><p>تكامل الذكاء الاصطناعي مع الخبرة الهندسية الميدانية لإدارة الأصول وتحولات الطاقة.</p></div>", unsafe_allow_html=True)
     
-    st.write("")
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.markdown(f"""
-        <div class="card">
-            <h3>🎯 رؤية المنصة</h3>
-            <p>تهدف المنصة لدمج الخبرات الميكانيكية الميدانية مع الحلول البرمجية الذكية لرفع كفاءة الإنتاج وتقليل تكاليف الصيانة.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="card">
-            <h3>🔬 الخبرة البحثية</h3>
-            <p>أنظمة مبنية على أسس أكاديمية موثقة دولياً في مجال الطاقة الحيوية واستدامة الأصول منذ عام 2016.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-elif page == "🛠️ الصيانة التنبؤية":
-    st.markdown("<h2>🛠️ تحليل الاهتزازات الرقمي (FFT)</h2>", unsafe_allow_html=True)
-    with st.container():
-        col_in, col_gr = st.columns([1, 2])
-        with col_in:
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
-            vib = st.slider("مستوى الاهتزاز (mm/s):", 0.0, 15.0, 3.5)
-            freq = st.number_input("التردد الأساسي (Hz):", 10, 500, 60)
-            st.markdown("</div>", unsafe_allow_html=True)
-        with col_gr:
-            x = np.linspace(0, 500, 300)
-            y = (np.exp(-((x - freq)**2)/40) * vib) + (np.exp(-((x - 2*freq)**2)/80) * (vib/2))
-            fig = go.Figure(go.Scatter(x=x, y=y, fill='tozeroy', line_color='#1E3A8A', name="FFT Spectrum"))
-            fig.update_layout(height=300, margin=dict(l=0,r=0,t=10,b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig, use_container_width=True)
-
-elif page == "🌱 كفاءة الخلايا الضوئية":
-    st.markdown("<h2>🌱 مراقبة ومعايرة الكفاءة الشمسية</h2>", unsafe_allow_html=True)
+    col_m1, col_m2, col_m3 = st.columns(3)
+    col_m1.metric("الموثوقية المستهدفة", "99.8%", "+0.5%")
+    col_m2.metric("توفير الطاقة المتوقع", "15%", "AI Optimized")
+    col_m3.metric("سرعة الاستجابة", "Real-time", "Active")
     
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    temp = c1.select_slider("الحرارة (C°)", options=list(range(10, 61)), value=30)
-    wind = c2.select_slider("الرياح (m/s)", options=list(range(0, 21)), value=5)
-    dust = c3.select_slider("الغبار (%)", options=list(range(0, 101)), value=15)
+    st.markdown("### 💠 مجالات التميز الهندسي")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("<div class='feature-box'><h4>🔬 البحث والتطوير</h4><p>تطوير حلول مبنية على أبحاث علمية منشورة دولياً (Bio-Gas 2016) لدعم الاقتصاد الدائري.</p></div>", unsafe_allow_html=True)
+    with c2:
+        st.markdown("<div class='feature-box'><h4>⚙️ أتمتة العمليات</h4><p>تحويل البيانات الخام من الحساسات إلى لوحات تحكم ذكية تدعم اتخاذ القرار الاستراتيجي.</p></div>", unsafe_allow_html=True)
+
+# --- صفحة الصيانة ---
+elif menu == "🛠️ الصيانة التنبؤية (Vibration)":
+    st.subheader("🛠️ نظام تحليل الاهتزازات الرقمي (FFT Diagnostic)")
     
-    eff = max(0, 20.0 - (temp-25)*0.06 - dust*0.12 + wind*0.03)
-    st.markdown(f"<h3 style='text-align: center;'>الكفاءة اللحظية: {eff:.2f}%</h3>", unsafe_allow_html=True)
-    st.progress(eff/25)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-elif page == "🤖 أتمتة الذكاء الاصطناعي":
-    st.markdown("<div class='card' style='border-right: 5px solid #FFD700;'>", unsafe_allow_html=True)
-    st.markdown("<h2>🤖 م. مجاهد بشير: خبير الأتمتة الصناعية</h2>", unsafe_allow_html=True)
-    st.write("""
-    **الذكاء الاصطناعي في خدمتك:**
-    * **أتمتة العمليات:** تقليل التدخل البشري في المهام المتكررة.
-    * **الرصد الذكي:** ربط الحساسات الميدانية بنظام تنبيهات فوري.
-    * **تحليل البيانات:** تحويل الأرقام الخام إلى قرارات استراتيجية.
-    """)
-    if st.button("🚀 تفعيل نظام الاستجابة الذكي"):
-        st.toast("جاري الاتصال بروبوت التوظيف...")
-        requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text=🤖 طلب جديد لتجربة الأتمتة من المنصة")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-st.sidebar.caption(f"© 2026 {PLATFORM_NAME}")
+    col_ctrl, col_chart = st.columns([1, 2])
+    
+    with col_ctrl:
+        st.write("🔧 **إعدادات المحاذاة**")
+        vibration = st.slider("مستوى الاهتزاز (mm/s RMS):", 0.0,
