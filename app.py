@@ -64,7 +64,39 @@ with st.sidebar:
     machine = st.selectbox("المعدة المستهدفة:", ["P-101 Centrifugal Pump", "C-202 Compressor", "Bio-Gas Generator"])
     vib_val = st.slider("Overall Vibration (mm/s RMS):", 0.0, 15.0, 3.2)
     rpm_val = st.number_input("Operating Speed (RPM):", value=1450)
+# --- إضافة قسم الروبوت الذكي داخل المنصة ---
+with st.expander("🤖 تفعيل وكيل التوظيف الذكي (نظام 2026)"):
+    st.markdown("### 🚀 مركز تحكم الروبوت الاستراتيجي")
+    col_bot1, col_bot2 = st.columns([1, 1])
+    
+    with col_bot1:
+        mode = st.radio("وضع تشغيل الروبوت:", 
+                        ["التقديم التلقائي المخصص (Auto-Apply)", "تحليل فجوة المهارات في السوق"])
+        
+        if st.button("تفعيل الوكيل الذكي الآن ⚡"):
+            # دالة إرسال التنبيه لتليجرام
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            msg = f"🤖 **تنبيه الروبوت:** تم تفعيل وضع {mode}\n👤 المهندس: مجاهد بشير\n📅 {timestamp}"
+            requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text={msg}")
+            
+            st.balloons()
+            st.success("الروبوت باشر العمل وسيوافيك بالنتائج على تليجرام.")
 
+    with col_bot2:
+        # محاكاة خريطة الفرص بناءً على بحثك
+        market_data = pd.DataFrame({
+            'التخصص': ['الهيدروجين', 'تحويل النفايات (بحثك)', 'صيانة التوربينات'],
+            'المطابقة': [85, 100, 75]
+        })
+        fig_bot = go.Figure(go.Bar(
+            x=market_data['التخصص'], y=market_data['المطابقة'],
+            marker_color=['#00d2ff', '#00ff88', '#FFD700']
+        ))
+        fig_bot.update_layout(title="نسبة مطابقة بروفايلك مع السوق", height=200, margin=dict(t=30, b=0, l=0, r=0))
+        st.plotly_chart(fig_bot, use_container_width=True)
+
+    st.info(f"🔗 **الروبوت مرتبط ببحثك:** {RESEARCH_TITLE}")
+    
 # --- 5. الواجهة الرئيسية (Dashboard) ---
 st.markdown(f"""
     <div style="background-color:#001529; padding:25px; border-radius:15px; border-right: 10px solid #FFD700; text-align: right; direction: rtl;">
@@ -137,3 +169,4 @@ with c_res2:
     """)
 
 st.sidebar.caption(f"تطوير م. مجاهد بشير © 2026 | {MY_PHONE}")
+
