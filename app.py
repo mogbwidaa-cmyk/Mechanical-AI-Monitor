@@ -40,9 +40,10 @@ with st.sidebar:
     st.markdown("🎓 **باحث دراسات عليا - طاقة متجددة**")
     
     st.divider()
-    # إضافة زر رابط منصة الطاقة الشمسية هنا
+    # إضافة الرابط الجديد المطلوب هنا
     st.markdown("🌐 **المنصات المتصلة:**")
-    st.markdown(f'''<a href="https://solar-plant.streamlit.app/" target="_blank"><button style="width:100%; height:40px; background-color:#FFD700; color:#001529; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">☀️ فتح منصة الطاقة الشمسية</button></a>''', unsafe_allow_html=True)
+    solar_link = "https://solar-plant-axkfbuscwnm2rxun8qjtdm.streamlit.app/"
+    st.markdown(f'''<a href="{solar_link}" target="_blank"><button style="width:100%; height:45px; background-color:#FFD700; color:#001529; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">☀️ منصة الطاقة الشمسية</button></a>''', unsafe_allow_html=True)
     
     st.divider()
     st.markdown(f"📞 **للتواصل:** `{MY_PHONE}`")
